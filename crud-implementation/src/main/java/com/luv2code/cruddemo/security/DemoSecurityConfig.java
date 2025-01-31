@@ -32,4 +32,24 @@ public class DemoSecurityConfig {
 
         return new InMemoryUserDetailsManager(john, mary, susan);
     }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(configurer ->
+                configurer
+                        .requestMatchers(HttpMethod.GET, "/api/employees").hasRole("EMPLOYEE")
+                        .requestMatchers(HttpMethod.GET, "/api/employees/**").hasRole("EMPLOYEE")
+                        .requestMatchers(HttpMethod.POST, "/api/employees").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/employees").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/employees/**").hasRole("ADMIN")
+        );
+
+        // use http basic authentication
+        http.httpBasic(Customizer.withDefaults());
+
+        // disable cross site request forgery (CSRF)
+        // In general not required for stateless rest api which uses POST, DELETE and/or PATCH
+        http.csrf(csrf->csrf.disable());
+        return http.build();
+    }
 }
